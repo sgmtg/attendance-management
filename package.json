@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "firebase emulators:exec --only firestore 'vitest run'"
+    "test": "vitest run",
+    "test:rule": "firebase emulators:exec --only firestore 'vitest run'"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
