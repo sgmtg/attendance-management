@@ -30,18 +30,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [currentUser, setCurrentUser] = useState<User | null | undefined>(
     undefined
   );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
+      setLoading(false); // 認証状態の確認が完了したらローディングを終了
     });
 
     return unsubscribe;
-  }, []);
+  }, [auth]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ currentUser }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
