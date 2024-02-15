@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from './firebase/Firebase'; // Firebaseの初期化設定をインポート
 import { doc, getDoc } from 'firebase/firestore';
