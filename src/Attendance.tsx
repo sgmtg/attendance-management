@@ -44,22 +44,27 @@ export const Attendance = () => {
   const [records, setRecords] = useState<DocumentData[]>([]);
   const employeeId = currentUser?.uid; // 従業員ID、実際には認証情報から取得する
 
+  const table_attendance_records = 'test';
+
   useEffect(() => {
     const q_history = query(
-      collection(db, 'attendance_records'),
+      collection(db, table_attendance_records),
       where('employee_id', '==', employeeId),
-      where('date', '>=', format(subDays(new Date(), 2), 'yyyy-MM-dd')),
+      where('date', '>=', format(subDays(new Date(), 3), 'yyyy-MM-dd')),
       orderBy('date', 'desc')
     );
 
     const today = format(new Date(), 'yyyy-MM-dd');
+    console.log('today0', today);
 
     const unsubscribe = onSnapshot(q_history, (querySnapshot) => {
+      console.log('aaaaaa');
       const data = querySnapshot.docs.map((doc) => doc.data());
       setRecords(data);
 
       // 本日の記録が存在するかどうかを確認
       const todayRecord = data.find((record) => record.date === today);
+      console.log('todayall', data);
 
       setAttended(!!todayRecord?.attended);
       // 退勤してるかどうかを確認
@@ -72,17 +77,14 @@ export const Attendance = () => {
   const postAttendance = async () => {
     const now = new Date();
     const dateStr = format(now, 'yyyy-MM-dd');
-    const timeStr = format(now, 'HH:mm:ss');
-    const yearMonthStr = format(now, 'yyyy-MM');
 
     const record = {
       employee_id: employeeId,
       date: dateStr,
-      attended: timeStr,
-      yearMonth: yearMonthStr,
+      attended: now,
     };
 
-    await addDoc(collection(db, 'attendance_records'), record);
+    await addDoc(collection(db, table_attendance_records), record);
 
     setAttended(true); // 出勤か退勤かで状態を変更
   };
@@ -90,11 +92,10 @@ export const Attendance = () => {
   const postLeaving = async () => {
     const now = new Date();
     const dateStr = format(now, 'yyyy-MM-dd');
-    const timeStr = format(now, 'HH:mm:ss');
 
     // 同じemployee_idとdateを持つレコードを検索するクエリを構築
     const q = query(
-      collection(db, 'attendance_records'),
+      collection(db, table_attendance_records),
       where('employee_id', '==', employeeId),
       where('date', '==', dateStr)
     );
@@ -104,9 +105,9 @@ export const Attendance = () => {
     if (!querySnapshot.empty) {
       // 最初に見つかったレコードのみを更新
       const docToUpdate = querySnapshot.docs[0];
-      const docRef = doc(db, 'attendance_records', docToUpdate.id);
+      const docRef = doc(db, table_attendance_records, docToUpdate.id);
       await updateDoc(docRef, {
-        left: timeStr,
+        left: now,
       });
     } else {
       // 該当するレコードがない場合の処理
@@ -149,6 +150,21 @@ export const Attendance = () => {
     '（土）',
   ];
 
+  const formatDuration = (milliseconds: number) => {
+    let plus = true;
+    if (milliseconds < 0) {
+      plus = false;
+      milliseconds = Math.abs(milliseconds);
+    }
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+    const seconds = totalSeconds - hours * 3600 - minutes * 60;
+    return plus
+      ? `${hours}時間${minutes}分${seconds}秒`
+      : `-${hours}時間${minutes}分${seconds}秒`;
+  };
+
   return (
     <div>
       <h1>
@@ -172,7 +188,7 @@ export const Attendance = () => {
         <TableContainer
           component={Paper}
           sx={{
-            maxWidth: 400,
+            maxWidth: 800,
             bgcolor: 'grey.100', // 背景色を薄いグレーに設定
             '& .MuiTableCell-head': {
               // ヘッダーセルのスタイルをカスタマイズ
@@ -186,20 +202,60 @@ export const Attendance = () => {
                 <TableCell>日付</TableCell>
                 <TableCell>出勤</TableCell>
                 <TableCell>退勤</TableCell>
+                <TableCell>勤務時間 （休憩含む）</TableCell>
+                <TableCell>
+                  所定労働時間時間（8時間）との差
+                  <br />
+                  （残業時間）
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {recordsToShow.map((record, index) => (
                 <TableRow
                   key={index}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                  }}
                 >
                   <TableCell component="th" scope="row">
                     {record.date}
                     {dayNames[new Date(record.date).getDay()]}
                   </TableCell>
-                  <TableCell>{record.attended}</TableCell>
-                  <TableCell>{record.left}</TableCell>
+                  <TableCell>
+                    {format(record.attended.toDate(), 'HH:mm:ss')}
+                  </TableCell>
+                  <TableCell>
+                    {record.left
+                      ? format(record.left.toDate(), 'HH:mm:ss')
+                      : '--:--:--'}
+                  </TableCell>
+                  <TableCell>
+                    {record.left
+                      ? formatDuration(
+                          record.left.toDate() - record.attended.toDate()
+                        )
+                      : '--:--:--'}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      //テキストの色を変える
+                      color: record.left
+                        ? record.left.toDate() - record.attended.toDate() >
+                          8 * 60 * 60 * 1000
+                          ? 'blue'
+                          : 'red'
+                        : 'black',
+                    }}
+                  >
+                    {record.left
+                      ? formatDuration(
+                          record.left.toDate() -
+                            record.attended.toDate() -
+                            8 * 60 * 60 * 1000
+                        )
+                      : '--:--:--'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
