@@ -13,7 +13,6 @@ import {
   endOfMonth,
   format,
   startOfMonth,
-  subDays,
   subMonths,
 } from 'date-fns';
 import {
@@ -46,7 +45,6 @@ export const AdminIndividual: React.FC<AdminIndividualProps> = ({
     const q_history = query(
       collection(db, table_attendance_records),
       where('employee_id', '==', employeeId),
-      where('date', '>=', format(subDays(new Date(), 3), 'yyyy-MM-dd')),
       orderBy('date', 'desc')
     );
 
