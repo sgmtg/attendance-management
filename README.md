@@ -1,3 +1,32 @@
+# 画面
+## ログイン画面
+- Emailとパスワードでログイン可能
+```
+管理者権限のあるユーザ：
+Email：　admin@gmail.com
+パスワード：admin@
+
+管理者権限のないユーザ2：
+Email：　hogehoge@gmail.com
+パスワード：hogehoge@
+
+管理者権限のないユーザ3：
+Email：　hogehoge2@gmail.com
+パスワード：hogehoge2@
+```
+![スクリーンショット 2024-02-16 6 50 28](https://github.com/sgmtg/attendance-management/assets/72187839/fd1e17ff-fa49-4152-8c00-44f58adfb3b0)
+
+## 打刻画面
+- 出勤、退勤を報告できる
+- 暫定の残業時間などを表示
+  
+## 管理画面
+- 管理者権限があるユーザのみアクセス可能
+- 本日の勤怠状況を確認できる
+- 各従業員について1ヶ月ごとの勤怠状況も確認できる
+
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
