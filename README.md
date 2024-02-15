@@ -14,16 +14,24 @@ Email：　hogehoge@gmail.com
 Email：　hogehoge2@gmail.com
 パスワード：hogehoge2@
 ```
-![スクリーンショット 2024-02-16 6 50 28](https://github.com/sgmtg/attendance-management/assets/72187839/fd1e17ff-fa49-4152-8c00-44f58adfb3b0)
+<img src="https://github.com/sgmtg/attendance-management/assets/72187839/fd1e17ff-fa49-4152-8c00-44f58adfb3b0" width="500px">
+
 
 ## 打刻画面
 - 出勤、退勤を報告できる
 - 暫定の残業時間などを表示
+<img src="https://github.com/sgmtg/attendance-management/assets/72187839/59b9938a-eb06-480f-bb43-9653babcf063" width="500px">
   
+
 ## 管理画面
 - 管理者権限があるユーザのみアクセス可能
-- 本日の勤怠状況を確認できる
-- 各従業員について1ヶ月ごとの勤怠状況も確認できる
+- 本日の勤怠状況を確認できる（ステータスが3つ）
+- 従業員idをクリックすると、各従業員について1ヶ月ごとの勤怠状況が確認できる
+<img src="https://github.com/sgmtg/attendance-management/assets/72187839/c59ce266-15de-4d15-a8fe-c10893767301" width="500px">
+<img src="https://github.com/sgmtg/attendance-management/assets/72187839/9d0b195f-8c0d-4ce5-94bc-cdf79fffaf0e" width="500px">
+
+
+
 
 
 
