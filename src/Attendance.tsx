@@ -12,15 +12,31 @@ import {
   updateDoc,
   doc,
 } from 'firebase/firestore';
-import { format } from 'date-fns';
+import {
+  addMonths,
+  endOfMonth,
+  format,
+  startOfMonth,
+  subDays,
+  subMonths,
+} from 'date-fns';
 import { useAuth } from './AuthContext';
-import { Button } from '@mui/material';
+import {
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 export const Attendance = () => {
   const { currentUser } = useAuth();
-
   const navigate = useNavigate();
+  const [currentViewMonth, setCurrentViewMonth] = useState(new Date());
 
   const [attended, setAttended] = useState(false);
   const [left, setLeft] = useState(false);
@@ -32,6 +48,7 @@ export const Attendance = () => {
     const q_history = query(
       collection(db, 'attendance_records'),
       where('employee_id', '==', employeeId),
+      where('date', '>=', format(subDays(new Date(), 2), 'yyyy-MM-dd')),
       orderBy('date', 'desc')
     );
 
@@ -56,11 +73,13 @@ export const Attendance = () => {
     const now = new Date();
     const dateStr = format(now, 'yyyy-MM-dd');
     const timeStr = format(now, 'HH:mm:ss');
+    const yearMonthStr = format(now, 'yyyy-MM');
 
     const record = {
       employee_id: employeeId,
       date: dateStr,
       attended: timeStr,
+      yearMonth: yearMonthStr,
     };
 
     await addDoc(collection(db, 'attendance_records'), record);
@@ -103,6 +122,33 @@ export const Attendance = () => {
     }
   };
 
+  // 月ごとの記録をフィルタリングする関数
+  const filterRecordsByMonth = (records: DocumentData[], month: Date) => {
+    const startOfMonthStr = format(startOfMonth(month), 'yyyy-MM-dd');
+    const endOfMonthStr = format(endOfMonth(month), 'yyyy-MM-dd');
+    return records.filter(
+      (record) => record.date >= startOfMonthStr && record.date <= endOfMonthStr
+    );
+  };
+
+  const showPreviousMonth = () => {
+    setCurrentViewMonth(subMonths(currentViewMonth, 1));
+  };
+  const showNextMonth = () => {
+    setCurrentViewMonth(addMonths(currentViewMonth, 1));
+  };
+
+  const recordsToShow = filterRecordsByMonth(records, currentViewMonth);
+  const dayNames = [
+    '（日）',
+    '（月）',
+    '（火）',
+    '（水）',
+    '（木）',
+    '（金）',
+    '（土）',
+  ];
+
   return (
     <div>
       <h1>
@@ -115,14 +161,51 @@ export const Attendance = () => {
       )}
       {attended && !left && <button onClick={() => postLeaving()}>退勤</button>}
       {left && <p>本日は退勤しました</p>}
-      <h2>過去の記録</h2>
-      <ul>
-        {records.map((record, index) => (
-          <li
-            key={index}
-          >{`日付: ${record.date}, 出勤: ${record.attended}, 退勤: ${record.left}`}</li>
-        ))}
-      </ul>
+      <h2>{format(currentViewMonth, 'yyyy-MM')}の出勤記録</h2>
+      <Button variant="outlined" onClick={showPreviousMonth}>
+        前の月を表示
+      </Button>
+      <Button variant="outlined" onClick={showNextMonth}>
+        次の月を表示
+      </Button>
+      <div>
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxWidth: 400,
+            bgcolor: 'grey.100', // 背景色を薄いグレーに設定
+            '& .MuiTableCell-head': {
+              // ヘッダーセルのスタイルをカスタマイズ
+              bgcolor: 'grey.400', // ヘッダーの背景色を少し濃いグレーに設定
+            },
+          }}
+        >
+          <Table aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>日付</TableCell>
+                <TableCell>出勤</TableCell>
+                <TableCell>退勤</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {recordsToShow.map((record, index) => (
+                <TableRow
+                  key={index}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {record.date}
+                    {dayNames[new Date(record.date).getDay()]}
+                  </TableCell>
+                  <TableCell>{record.attended}</TableCell>
+                  <TableCell>{record.left}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
     </div>
   );
 };
