@@ -140,6 +140,17 @@ export const Attendance = () => {
   };
 
   const recordsToShow = filterRecordsByMonth(records, currentViewMonth);
+
+  // 今月の累積残業時間を計算
+  const totalOvertime = recordsToShow.reduce((acc, record) => {
+    if (record.left) {
+      const overtime =
+        record.left.toDate() - record.attended.toDate() - 8 * 60 * 60 * 1000;
+      return acc + Math.max(overtime, 0);
+    }
+    return acc;
+  }, 0);
+
   const dayNames = [
     '（日）',
     '（月）',
@@ -178,10 +189,19 @@ export const Attendance = () => {
       {attended && !left && <button onClick={() => postLeaving()}>退勤</button>}
       {left && <p>本日は退勤しました</p>}
       <h2>{format(currentViewMonth, 'yyyy-MM')}の出勤記録</h2>
-      <Button variant="outlined" onClick={showPreviousMonth}>
+      <div>当月の累積残業時間: {formatDuration(totalOvertime)}</div>
+      <Button
+        variant="outlined"
+        onClick={showPreviousMonth}
+        sx={{ marginTop: '0.5em', marginBottom: '0.5em' }}
+      >
         前の月を表示
       </Button>
-      <Button variant="outlined" onClick={showNextMonth}>
+      <Button
+        variant="outlined"
+        onClick={showNextMonth}
+        sx={{ marginLeft: '0.5em', marginTop: '0.5em', marginBottom: '0.5em' }}
+      >
         次の月を表示
       </Button>
       <div>
