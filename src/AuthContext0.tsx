@@ -4,6 +4,7 @@ import { Home } from './Home';
 import { Attendance } from './Attendance';
 import { Notfound } from './Notfound';
 import { useAuth } from './AuthContext';
+import { AdminPage } from './AdminPage';
 
 export const AuthContext0 = () => {
   const { currentUser } = useAuth();
@@ -16,6 +17,7 @@ export const AuthContext0 = () => {
             <Route path="/" element={<Home />} /> {/*RouteにHomeを設定する*/}
             <Route path="/login" element={<Login />} />
             <Route path="/attendance" element={<Attendance />} />
+            <Route path="/adminpage" element={<AdminPage />} />
             <Route path="*" element={<Notfound />} />
           </Routes>
         </>
