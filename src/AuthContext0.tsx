@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
 import { Login } from './Login';
-import { Home } from './Home';
 import { Attendance } from './Attendance';
 import { Notfound } from './Notfound';
 import { useAuth } from './AuthContext';
@@ -14,7 +13,7 @@ export const AuthContext0 = () => {
       {currentUser ? (
         <>
           <Routes>
-            <Route path="/" element={<Home />} /> {/*RouteにHomeを設定する*/}
+            <Route path="/" element={<Login />} /> {/*RouteにHomeを設定する*/}
             <Route path="/login" element={<Login />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/adminpage" element={<AdminPage />} />
