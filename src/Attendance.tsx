@@ -23,18 +23,30 @@ export const Attendance = () => {
   const navigate = useNavigate();
 
   const [attended, setAttended] = useState(false);
+  const [left, setLeft] = useState(false);
+
   const [records, setRecords] = useState<DocumentData[]>([]);
   const employeeId = currentUser?.uid; // 従業員ID、実際には認証情報から取得する
 
   useEffect(() => {
-    const q = query(
+    const q_history = query(
       collection(db, 'attendance_records'),
       where('employee_id', '==', employeeId),
       orderBy('date', 'desc')
     );
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+
+    const today = format(new Date(), 'yyyy-MM-dd');
+
+    const unsubscribe = onSnapshot(q_history, (querySnapshot) => {
       const data = querySnapshot.docs.map((doc) => doc.data());
       setRecords(data);
+
+      // 本日の記録が存在するかどうかを確認
+      const todayRecord = data.find((record) => record.date === today);
+
+      setAttended(!!todayRecord?.attended);
+      // 退勤してるかどうかを確認
+      setLeft(!!todayRecord?.left);
     });
 
     return () => unsubscribe();
@@ -75,7 +87,7 @@ export const Attendance = () => {
       const docToUpdate = querySnapshot.docs[0];
       const docRef = doc(db, 'attendance_records', docToUpdate.id);
       await updateDoc(docRef, {
-        leaved: timeStr,
+        left: timeStr,
       });
     } else {
       // 該当するレコードがない場合の処理
@@ -98,14 +110,17 @@ export const Attendance = () => {
         <Button onClick={onLogout}>ログアウト</Button>
         <Button onClick={() => navigate('/adminpage')}>管理者ページ</Button>
       </h1>
-      {!attended && <button onClick={() => postAttendance()}>出勤</button>}
-      {attended && <button onClick={() => postLeaving()}>退勤</button>}
+      {!attended && !left && (
+        <button onClick={() => postAttendance()}>出勤</button>
+      )}
+      {attended && !left && <button onClick={() => postLeaving()}>退勤</button>}
+      {left && <p>本日は退勤しました</p>}
       <h2>過去の記録</h2>
       <ul>
         {records.map((record, index) => (
           <li
             key={index}
-          >{`日付: ${record.date}, 出勤: ${record.attended}, 退勤: ${record.leaved}`}</li>
+          >{`日付: ${record.date}, 出勤: ${record.attended}, 退勤: ${record.left}`}</li>
         ))}
       </ul>
     </div>
